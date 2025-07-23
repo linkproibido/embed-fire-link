@@ -6,14 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, VideoIcon } from "lucide-react";
+import { generateShareableLink } from "@/lib/videoUtils";
+import { Loader2, VideoIcon, ExternalLink, Copy, CheckCircle } from "lucide-react";
 
 interface VideoFormProps {
-  onVideoCreated: (videoId: string) => void;
+  onVideoCreated?: (videoId: string) => void;
 }
 
 const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
   const [loading, setLoading] = useState(false);
+  const [createdLink, setCreatedLink] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     embedUrl: "",
@@ -36,6 +38,13 @@ const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
     setLoading(true);
 
     try {
+      // Primeiro, autentica como usuário anônimo
+      const { data: authData, error: authError } = await supabase.auth.signInAnonymously();
+      
+      if (authError) {
+        console.error("Erro de autenticação:", authError);
+      }
+
       const { data, error } = await supabase
         .from("movies")
         .insert([
@@ -53,9 +62,12 @@ const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
         throw error;
       }
 
+      const shareableLink = generateShareableLink(data.id);
+      setCreatedLink(shareableLink);
+
       toast({
         title: "Link criado com sucesso!",
-        description: "Seu vídeo foi adicionado à plataforma",
+        description: "Seu link privado foi gerado",
       });
 
       setFormData({
@@ -65,7 +77,7 @@ const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
         description: ""
       });
 
-      onVideoCreated(data.id);
+      onVideoCreated?.(data.id);
     } catch (error) {
       console.error("Erro ao criar vídeo:", error);
       toast({
@@ -78,13 +90,99 @@ const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
     }
   };
 
+  const handleCopyLink = async () => {
+    if (!createdLink) return;
+    
+    try {
+      await navigator.clipboard.writeText(createdLink);
+      toast({
+        title: "Link copiado!",
+        description: "O link foi copiado para a área de transferência",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao copiar",
+        description: "Tente novamente",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNewVideo = () => {
+    setCreatedLink(null);
+  };
+
+  // Se um link foi criado, mostra a tela de sucesso
+  if (createdLink) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto bg-gradient-card border-border shadow-card">
+        <CardHeader className="text-center">
+          <CardTitle className="flex items-center justify-center gap-3 text-2xl font-heading">
+            <CheckCircle className="w-8 h-8 text-success" />
+            Link Criado!
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              Seu link privado foi gerado com sucesso. Compartilhe apenas com quem você desejar.
+            </p>
+            
+            <div className="p-4 bg-secondary rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground mb-2">Link Privado:</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={createdLink}
+                  readOnly
+                  className="font-mono text-sm bg-input"
+                />
+                <Button
+                  onClick={handleCopyLink}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => window.open(createdLink, '_blank')}
+              variant="default"
+              size="lg"
+              className="flex-1"
+            >
+              <ExternalLink className="w-5 h-5" />
+              Visualizar Vídeo
+            </Button>
+            
+            <Button
+              onClick={handleNewVideo}
+              variant="outline"
+              size="lg"
+              className="flex-1"
+            >
+              Criar Novo Link
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Formulário de criação
   return (
     <Card className="w-full max-w-2xl mx-auto bg-gradient-card border-border shadow-card">
       <CardHeader className="text-center">
         <CardTitle className="flex items-center justify-center gap-3 text-2xl font-heading">
           <VideoIcon className="w-8 h-8 text-primary" />
-          Criar Novo Link
+          Criar Link Privado
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-2">
+          Crie um link privado para compartilhar seu vídeo com segurança
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -155,7 +253,7 @@ const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
                 Criando Link...
               </>
             ) : (
-              "Gerar Link"
+              "Gerar Link Privado"
             )}
           </Button>
         </form>

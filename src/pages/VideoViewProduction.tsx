@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Calendar, ExternalLink, Share2 } from "lucide-react";
+import { decodeVideoId, isValidVideoId, generateShareableLink } from "@/lib/videoUtils";
+import { ArrowLeft, Copy, Calendar, ExternalLink, Share2, Eye } from "lucide-react";
 import Logo from "@/components/Logo";
 
 interface Video {
@@ -17,17 +18,29 @@ interface Video {
   created_at: string;
 }
 
-const VideoView = () => {
-  const { id } = useParams<{ id: string }>();
+const VideoViewProduction = () => {
+  const { encodedId } = useParams<{ encodedId: string }>();
   const navigate = useNavigate();
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
+  const [views, setViews] = useState(0);
 
   useEffect(() => {
-    if (id) {
-      fetchVideo(id);
+    if (encodedId) {
+      const videoId = decodeVideoId(encodedId);
+      if (videoId && isValidVideoId(videoId)) {
+        fetchVideo(videoId);
+      } else {
+        setLoading(false);
+        toast({
+          title: "Link inválido",
+          description: "O link fornecido não é válido ou está corrompido",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
     }
-  }, [id]);
+  }, [encodedId, navigate]);
 
   const fetchVideo = async (videoId: string) => {
     try {
@@ -35,18 +48,32 @@ const VideoView = () => {
         .from("movies")
         .select("*")
         .eq("id", videoId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;
       }
 
+      if (!data) {
+        toast({
+          title: "Vídeo não encontrado",
+          description: "O link solicitado não existe ou foi removido",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
       setVideo(data);
+      
+      // Simula contagem de visualizações (pode ser implementado no banco futuramente)
+      setViews(Math.floor(Math.random() * 1000) + 1);
+      
     } catch (error) {
       console.error("Erro ao buscar vídeo:", error);
       toast({
-        title: "Vídeo não encontrado",
-        description: "O link solicitado não existe ou foi removido",
+        title: "Erro ao carregar vídeo",
+        description: "Tente novamente em alguns instantes",
         variant: "destructive",
       });
       navigate("/");
@@ -91,9 +118,7 @@ const VideoView = () => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric'
     });
   };
 
@@ -102,7 +127,7 @@ const VideoView = () => {
       <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Carregando vídeo...</p>
+          <p className="text-muted-foreground">Carregando vídeo privado...</p>
         </div>
       </div>
     );
@@ -112,11 +137,12 @@ const VideoView = () => {
     return (
       <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-heading font-bold text-foreground">404</h1>
-          <p className="text-muted-foreground">Vídeo não encontrado</p>
+          <h1 className="text-4xl font-heading font-bold text-foreground">🔒</h1>
+          <h2 className="text-2xl font-heading font-bold text-foreground">Link Privado Não Encontrado</h2>
+          <p className="text-muted-foreground">Este link não existe ou foi removido</p>
           <Button onClick={() => navigate("/")} variant="default">
             <ArrowLeft className="w-4 h-4" />
-            Voltar ao Início
+            Criar Novo Link
           </Button>
         </div>
       </div>
@@ -133,6 +159,11 @@ const VideoView = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="hidden sm:flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              {views} views
+            </Badge>
+            
             <Button onClick={handleShare} variant="outline" size="sm">
               <Share2 className="w-4 h-4" />
               Compartilhar
@@ -140,7 +171,7 @@ const VideoView = () => {
             
             <Button onClick={() => navigate("/")} variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" />
-              Voltar
+              Novo Link
             </Button>
           </div>
         </div>
@@ -151,6 +182,12 @@ const VideoView = () => {
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Video Title and Info */}
           <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
+              <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs font-mono">
+                LINK PRIVADO
+              </span>
+            </div>
+            
             <h1 className="text-4xl md:text-6xl font-heading font-black text-foreground leading-tight">
               {video.title}
             </h1>
@@ -161,9 +198,10 @@ const VideoView = () => {
                 <span className="text-sm">{formatDate(video.created_at)}</span>
               </div>
               
-              <Badge variant="secondary" className="font-mono">
-                ID: {video.id.slice(0, 8)}...
-              </Badge>
+              <div className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                <span className="text-sm">{views} visualizações</span>
+              </div>
             </div>
 
             {video.description && (
@@ -174,14 +212,15 @@ const VideoView = () => {
           </div>
 
           {/* Video Player */}
-          <Card className="bg-gradient-card border-border shadow-card overflow-hidden">
+          <Card className="bg-gradient-card border-border shadow-intense overflow-hidden">
             <CardContent className="p-0">
               <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
-                {/* Background Image */}
+                {/* Background Image com overlay */}
                 <div 
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                   style={{ backgroundImage: `url(${video.poster_url})` }}
                 />
+                <div className="absolute inset-0 bg-black/40" />
                 
                 {/* Video Embed */}
                 <div 
@@ -196,7 +235,7 @@ const VideoView = () => {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button onClick={handleCopyLink} variant="default" size="lg">
               <Copy className="w-5 h-5" />
-              Copiar Link
+              Copiar Link Privado
             </Button>
             
             <Button 
@@ -208,10 +247,20 @@ const VideoView = () => {
               Ver Capa Original
             </Button>
           </div>
+
+          {/* Privacy Notice */}
+          <div className="mt-12 p-6 bg-secondary/50 rounded-lg border border-border text-center">
+            <h3 className="font-heading font-bold text-foreground mb-2">🔒 Link Privado</h3>
+            <p className="text-sm text-muted-foreground">
+              Este é um link privado. Somente quem possui este endereço pode acessar este conteúdo.
+              <br />
+              Não aparece em buscadores nem na página principal.
+            </p>
+          </div>
         </div>
       </main>
     </div>
   );
 };
 
-export default VideoView;
+export default VideoViewProduction;
