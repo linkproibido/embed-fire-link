@@ -35,19 +35,18 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-dark">
+    <div className="min-h-screen bg-gradient-dark flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-background/10 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6 sm:py-8">
           <div className="text-center space-y-6">
             <Logo size="xl" className="mb-4" />
-            <div className="max-w-3xl mx-auto space-y-4">
-              <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground">
+            <div className="max-w-3xl mx-auto space-y-4 px-2">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-foreground leading-tight">
                 Compartilhamento Privado de Vídeos
               </h2>
-              <p className="text-lg text-muted-foreground">
-                Crie links privados e seguros para seus vídeos. Sem listagens públicas, sem rastreamento.
-                <br />
+              <p className="text-base sm:text-lg text-muted-foreground">
+                Crie links privados e seguros para seus vídeos. Sem listagens públicas, sem rastreamento. <br />
                 <span className="text-primary font-medium">Apenas quem tem o link pode assistir.</span>
               </p>
             </div>
@@ -56,9 +55,8 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-10 sm:py-12 flex-1">
         <div className="max-w-7xl mx-auto">
-          
           {/* Action Section */}
           {!showForm && (
             <div className="text-center mb-16">
@@ -66,13 +64,13 @@ const Index = () => {
                 onClick={() => setShowForm(true)}
                 variant="hero"
                 size="xl"
-                className="text-xl px-12 py-6"
+                className="text-lg sm:text-xl px-8 sm:px-12 py-5 sm:py-6 w-full sm:w-auto"
               >
-                <Video className="w-6 h-6" />
+                <Video className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Criar Link Privado
-                <Zap className="w-5 h-5 text-yellow-400" />
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 ml-2" />
               </Button>
-              
+
               <p className="text-sm text-muted-foreground mt-4">
                 Gratuito • Sem cadastro • Links instantâneos
               </p>
@@ -87,6 +85,7 @@ const Index = () => {
                   onClick={() => setShowForm(false)}
                   variant="outline"
                   size="lg"
+                  className="w-full sm:w-auto"
                 >
                   ← Voltar
                 </Button>
@@ -99,25 +98,26 @@ const Index = () => {
           {!showForm && (
             <div className="space-y-12">
               <div className="text-center">
-                <h3 className="text-2xl font-heading font-bold text-foreground mb-4">
+                <h3 className="text-xl sm:text-2xl font-heading font-bold text-foreground mb-3">
                   Por Que Usar o Link Proibido?
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Máxima privacidade e controle sobre seus conteúdos
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                 {features.map((feature, index) => (
-                  <Card key={index} className="bg-gradient-card border-border shadow-card hover:shadow-intense transition-all duration-300">
+                  <Card
+                    key={index}
+                    className="bg-gradient-card border-border shadow-card hover:shadow-intense transition-all duration-300"
+                  >
                     <CardContent className="p-6 text-center space-y-4">
-                      <div className="flex justify-center">
-                        {feature.icon}
-                      </div>
-                      <h4 className="text-xl font-heading font-bold text-foreground">
+                      <div className="flex justify-center">{feature.icon}</div>
+                      <h4 className="text-lg sm:text-xl font-heading font-bold text-foreground">
                         {feature.title}
                       </h4>
-                      <p className="text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         {feature.description}
                       </p>
                     </CardContent>
@@ -126,38 +126,41 @@ const Index = () => {
               </div>
 
               {/* How it Works */}
-              <div className="bg-secondary/30 rounded-xl p-8 border border-border">
-                <h3 className="text-xl font-heading font-bold text-foreground mb-6 text-center">
+              <div className="bg-secondary/30 rounded-xl p-6 sm:p-8 border border-border">
+                <h3 className="text-lg sm:text-xl font-heading font-bold text-foreground mb-6 text-center">
                   Como Funciona
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto font-bold text-primary-foreground">
-                      1
-                    </div>
-                    <h4 className="font-semibold text-foreground">Cole o Embed</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Adicione o código embed do seu vídeo
-                    </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto font-bold text-primary-foreground">
-                      2
-                    </div>
-                    <h4 className="font-semibold text-foreground">Gere o Link</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Receba um link privado codificado
-                    </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto font-bold text-primary-foreground">
-                      3
-                    </div>
-                    <h4 className="font-semibold text-foreground">Compartilhe</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Envie apenas para quem deve ver
-                    </p>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  {[1, 2, 3].map((step, idx) => {
+                    const steps = [
+                      {
+                        title: "Cole o Embed",
+                        desc: "Adicione o código embed do seu vídeo"
+                      },
+                      {
+                        title: "Gere o Link",
+                        desc: "Receba um link privado codificado"
+                      },
+                      {
+                        title: "Compartilhe",
+                        desc: "Envie apenas para quem deve ver"
+                      }
+                    ];
+
+                    return (
+                      <div key={idx} className="text-center space-y-2">
+                        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto font-bold text-primary-foreground">
+                          {step}
+                        </div>
+                        <h4 className="font-semibold text-foreground">
+                          {steps[idx].title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {steps[idx].desc}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
