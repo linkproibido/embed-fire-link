@@ -42,10 +42,7 @@ export const decodeVideoId = (encodedId: string): string | null => {
 // Função para gerar um link compartilhável
 export const generateShareableLink = (videoId: string): string => {
   const encodedId = encodeVideoId(videoId);
-  const baseUrl = window.location.hostname === 'localhost' || window.location.hostname.includes('lovable.app') 
-    ? window.location.origin 
-    : 'https://linkproibido.com';
-  return `${baseUrl}/v/${encodedId}`;
+  return `https://linkproibido.com/v/${encodedId}`;
 };
 
 // Função para validar formato de ID
