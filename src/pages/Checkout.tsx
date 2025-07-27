@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,19 @@ const Checkout = () => {
 
     checkUser();
   }, [navigate]);
+
+  // 👉 Carregar o botão da Yampi dinamicamente
+  useEffect(() => {
+    const scriptId = 'yampi-checkout-script';
+    const existingScript = document.getElementById(scriptId);
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js';
+      script.async = true;
+      document.getElementById('yampi-button-container')?.appendChild(script);
+    }
+  }, []);
 
   if (!user) {
     return (
@@ -53,12 +66,8 @@ const Checkout = () => {
 
       <div className="container mx-auto px-4 py-12 max-w-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-heading font-bold mb-4">
-            Finalizar Assinatura
-          </h1>
-          <p className="text-muted-foreground">
-            Você está quase lá! Complete seu pagamento para ter acesso total.
-          </p>
+          <h1 className="text-3xl font-heading font-bold mb-4">Finalizar Assinatura</h1>
+          <p className="text-muted-foreground">Você está quase lá! Complete seu pagamento para ter acesso total.</p>
         </div>
 
         <div className="grid gap-6">
@@ -81,9 +90,7 @@ const Checkout = () => {
           <Card className="border-primary/20 shadow-xl bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-center">Plano Premium</CardTitle>
-              <CardDescription className="text-center">
-                Acesso completo a todo conteúdo
-              </CardDescription>
+              <CardDescription className="text-center">Acesso completo a todo conteúdo</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center mb-6">
@@ -114,14 +121,12 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Botão da Yampi centralizado */}
-              <div className="flex justify-center mt-6">
-                <div dangerouslySetInnerHTML={{ __html: `<script class="ymp-script" src="https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js"></script>` }} />
-              </div>
+              {/* Botão da Yampi renderizado no DOM */}
+              <div id="yampi-button-container" className="flex justify-center mt-6" />
             </CardContent>
           </Card>
 
-          {/* Security Notice */}
+          {/* Segurança */}
           <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
