@@ -63,6 +63,10 @@ const Checkout = () => {
   }, [user, subscriptionId, toast]);
 
   useEffect(() => {
+    // Remove qualquer script anterior da Yampi
+    document.querySelectorAll('.ymp-script').forEach((s) => s.remove());
+
+    // Adiciona o script da Yampi
     const script = document.createElement('script');
     script.src = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js';
     script.async = true;
@@ -70,7 +74,8 @@ const Checkout = () => {
     document.body.appendChild(script);
 
     return () => {
-      document.querySelectorAll('.ymp-script').forEach(s => s.remove());
+      // Cleanup
+      document.querySelectorAll('.ymp-script').forEach((s) => s.remove());
     };
   }, []);
 
@@ -109,7 +114,6 @@ const Checkout = () => {
         </section>
 
         <div className="grid gap-6">
-          {/* Confirmação do usuário */}
           <Card className="bg-card/80 backdrop-blur-md border-border/40 shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -124,7 +128,6 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Plano e botão */}
           <Card className="bg-white border border-border/30 shadow-xl">
             <CardHeader>
               <CardTitle className="text-center text-xl">Plano Premium</CardTitle>
@@ -156,12 +159,14 @@ const Checkout = () => {
                 ))}
               </ul>
 
-              {/* Yampi embutido */}
-              <div id="yampi-checkout-btn" className="w-full" />
+              {/* Local onde o botão será injetado */}
+              <div className="yampi-buy-button"
+                   data-product="AYCW65ZQEL"
+                   data-store="hype-sistemas"
+              ></div>
             </CardContent>
           </Card>
 
-          {/* Segurança */}
           <Card className="bg-card/70 border-border/30 backdrop-blur">
             <CardContent className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
               <Shield className="h-5 w-5 text-primary" />
