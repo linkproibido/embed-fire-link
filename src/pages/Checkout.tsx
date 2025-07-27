@@ -15,45 +15,32 @@ const Checkout = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (!data.user || error) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         navigate('/auth?redirect=checkout');
         return;
       }
-      setUser(data.user);
+      setUser(user);
     };
-
     checkUser();
   }, [navigate]);
-
-  useEffect(() => {
-    const scriptId = 'yampi-checkout-script';
-    const scriptAlreadyLoaded = document.getElementById(scriptId);
-
-    if (!scriptAlreadyLoaded) {
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.src = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js';
-      script.async = true;
-
-      script.onload = () => console.log('Yampi script carregado');
-
-      document.getElementById('yampi-button-container')?.appendChild(script);
-    }
-  }, []);
 
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Verificando autenticação...</p>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  const handleRedirectToYampi = () => {
+    window.location.href = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -68,8 +55,8 @@ const Checkout = () => {
 
       <div className="container mx-auto px-4 py-12 max-w-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Finalizar Assinatura</h1>
-          <p className="text-muted-foreground">Complete seu pagamento para liberar o conteúdo.</p>
+          <h1 className="text-3xl font-heading font-bold mb-4">Finalizar Assinatura</h1>
+          <p className="text-muted-foreground">Você está quase lá! Complete seu pagamento para ter acesso total.</p>
         </div>
 
         <div className="grid gap-6">
@@ -81,31 +68,51 @@ const Checkout = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground"><strong>Email:</strong> {user.email}</p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Email:</strong> {user.email}
+              </p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/20 shadow-xl bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-center">Plano Premium</CardTitle>
-              <CardDescription className="text-center">Acesso completo ao conteúdo exclusivo</CardDescription>
+              <CardDescription className="text-center">Acesso completo a todo conteúdo</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center mb-6">
                 <div className="text-4xl font-black text-primary mb-2">
                   R$ 20<span className="text-lg text-muted-foreground">/mês</span>
                 </div>
-                <p className="text-sm text-muted-foreground">Cancele quando quiser</p>
+                <p className="text-sm text-muted-foreground">
+                  Cobrança mensal • Cancele quando quiser
+                </p>
               </div>
 
-              <div className="space-y-3 mb-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Acesso a todas as categorias</div>
-                <div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Conteúdo premium e exclusivo</div>
-                <div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Acesso imediato após pagamento</div>
-                <div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Suporte prioritário</div>
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Acesso a todas as categorias</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Conteúdo exclusivo e premium</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Acesso imediato após pagamento</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Suporte prioritário</span>
+                </div>
               </div>
 
-              <div id="yampi-button-container" className="w-full flex justify-center mt-6" />
+              <div className="flex justify-center mt-6">
+                <Button size="lg" className="text-base px-6 py-3" onClick={handleRedirectToYampi}>
+                  Finalizar Pagamento
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -114,8 +121,8 @@ const Checkout = () => {
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Shield className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="font-medium text-foreground">Pagamento seguro</p>
-                  <p>Protegido pela Yampi</p>
+                  <p className="font-medium text-foreground">Pagamento 100% seguro</p>
+                  <p>Seus dados são protegidos pela Yampi</p>
                 </div>
               </div>
             </CardContent>
