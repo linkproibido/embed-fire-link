@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
 import Logo from '@/components/Logo';
@@ -14,9 +12,7 @@ const Checkout = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const yampiRef = useRef<HTMLDivElement>(null);
 
-  // 🔐 Verifica usuário logado
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -26,23 +22,37 @@ const Checkout = () => {
       }
       setUser(user);
     };
+
     checkUser();
   }, [navigate]);
 
-  // 🧠 Renderizar botão da Yampi corretamente
+  // Corrigido: carrega script da Yampi após DOM estar pronto
   useEffect(() => {
-    if (yampiRef.current) {
-      yampiRef.current.innerHTML = `
-        <div class="yampi-buy-button"
-             data-store="hype-sistemas"
-             data-product="AYCW65ZQEL">
-        </div>
-      `;
+    const scriptId = 'yampi-checkout-script';
+    const existingScript = document.getElementById(scriptId);
+
+    const loadYampi = () => {
+      if (existingScript) {
+        existingScript.remove();
+      }
+
       const script = document.createElement('script');
-      script.src = 'https://cdn.yampi.com/buy-button.js';
+      script.id = scriptId;
+      script.src = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js';
       script.async = true;
-      yampiRef.current.appendChild(script);
-    }
+
+      script.onload = () => {
+        console.log('Botão da Yampi carregado.');
+      };
+
+      document.getElementById('yampi-button-container')?.appendChild(script);
+    };
+
+    const timeout = setTimeout(() => {
+      loadYampi();
+    }, 300); // Aguarda DOM renderizar
+
+    return () => clearTimeout(timeout);
   }, []);
 
   if (!user) {
@@ -92,7 +102,7 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Plano */}
+          {/* Plano Premium */}
           <Card className="border-primary/20 shadow-xl bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-center">Plano Premium</CardTitle>
@@ -109,21 +119,26 @@ const Checkout = () => {
               </div>
 
               <div className="space-y-3 mb-6">
-                {[
-                  'Acesso a todas as categorias',
-                  'Conteúdo exclusivo e premium',
-                  'Acesso imediato após pagamento',
-                  'Suporte prioritário',
-                ].map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    <span>{benefit}</span>
-                  </div>
-                ))}
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Acesso a todas as categorias</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Conteúdo exclusivo e premium</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Acesso imediato após pagamento</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span>Suporte prioritário</span>
+                </div>
               </div>
 
-              {/* Botão da Yampi */}
-              <div ref={yampiRef} className="flex justify-center mt-6" />
+              {/* Aqui o botão da Yampi será injetado */}
+              <div id="yampi-button-container" className="flex justify-center mt-6" />
             </CardContent>
           </Card>
 
