@@ -1,82 +1,87 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { User } from "@supabase/supabase-js";
-import Logo from "@/components/Logo";
-import { CheckCircle, CreditCard, Shield } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { User } from '@supabase/supabase-js';
+import Logo from '@/components/Logo';
+import { CheckCircle, CreditCard, Shield } from 'lucide-react';
 
 const Checkout = () => {
   const [user, setUser] = useState<User | null>(null);
   const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Autenticação do usuário
+  // Verifica autenticação
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
       if (!data?.user) {
-        router.push("/auth?redirect=checkout");
+        navigate('/auth?redirect=checkout');
         return;
       }
       setUser(data.user);
     };
 
-    fetchUser();
-  }, [router]);
+    checkUser();
+  }, [navigate]);
 
-  // Criação da assinatura no Supabase
+  // Cria assinatura
   useEffect(() => {
     const createSubscription = async () => {
       if (!user || subscriptionId) return;
 
       const { data, error } = await supabase
-        .from("subscriptions")
+        .from('subscriptions')
         .insert({
           user_id: user.id,
           email: user.email,
-          status: "pending",
+          status: 'pending',
           amount: 20.0,
         })
         .select()
         .single();
 
-      if (data) setSubscriptionId(data.id);
-
       if (error) {
         toast({
-          title: "Erro",
-          description: "Não foi possível criar a assinatura.",
-          variant: "destructive",
+          title: 'Erro',
+          description: 'Não foi possível criar a assinatura.',
+          variant: 'destructive',
         });
+      } else if (data) {
+        setSubscriptionId(data.id);
       }
     };
 
     createSubscription();
   }, [user, subscriptionId, toast]);
 
-  // Carrega o botão da Yampi
+  // Carrega botão Yampi
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js";
-    script.className = "ymp-script";
+    const script = document.createElement('script');
+    script.src = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js';
     script.async = true;
-    document.getElementById("yampi-checkout-btn")?.appendChild(script);
+    script.className = 'ymp-script';
+    document.body.appendChild(script);
 
     return () => {
-      document.getElementById("yampi-checkout-btn")?.removeChild(script);
+      document.querySelectorAll('.ymp-script').forEach(s => s.remove());
     };
   }, []);
 
-  // Loader enquanto autentica
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Card className="w-full max-w-sm text-center">
+          <CardContent className="p-6">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Verificando autenticação...</p>
           </CardContent>
@@ -86,31 +91,35 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-      <header className="border-b border-border/40 backdrop-blur-md bg-background/80 sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/90 to-primary/5">
+      {/* Header */}
+      <header className="backdrop-blur bg-background/80 border-b border-border/30">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="md" />
-          <Button variant="ghost" onClick={() => router.push("/dashboard")}>
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             Dashboard
           </Button>
         </div>
       </header>
 
+      {/* Conteúdo */}
       <main className="container mx-auto px-4 py-12 max-w-2xl">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold mb-2">Finalizar Assinatura</h1>
+        <section className="text-center mb-8">
+          <h1 className="text-3xl font-heading font-bold mb-2">
+            Finalizar Assinatura
+          </h1>
           <p className="text-muted-foreground">
-            Complete seu pagamento e desbloqueie o conteúdo premium.
+            Complete seu pagamento para liberar acesso completo.
           </p>
-        </div>
+        </section>
 
         <div className="grid gap-6">
-          {/* Conta Confirmada */}
-          <Card>
+          {/* Confirmação do usuário */}
+          <Card className="bg-card/80 backdrop-blur-md border-border/40 shadow-md">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-primary" />
-                Conta Confirmada
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                Conta verificada
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -121,43 +130,49 @@ const Checkout = () => {
           </Card>
 
           {/* Plano */}
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle>Plano Premium</CardTitle>
-              <CardDescription>Acesso completo por R$15/mês</CardDescription>
+          <Card className="bg-card/90 border-primary/30 shadow-lg backdrop-blur">
+            <CardHeader>
+              <CardTitle className="text-center text-xl">Plano Premium</CardTitle>
+              <CardDescription className="text-center">
+                Acesso ilimitado a todos os conteúdos
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center text-4xl font-bold text-primary mb-4">
-                R$ 20<span className="text-lg text-muted-foreground">/mês</span>
+              <div className="text-center mb-6">
+                <div className="text-4xl font-black text-primary mb-1">
+                  R$ 20<span className="text-lg text-muted-foreground">/mês</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Cancele quando quiser, sem fidelidade
+                </p>
               </div>
 
-              <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  Acesso a todas as categorias
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  Conteúdo atualizado constantemente
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  Suporte prioritário
-                </li>
+              <ul className="space-y-3 mb-6 text-sm text-left">
+                {[
+                  'Acesso a todas as categorias',
+                  'Conteúdo exclusivo e premium',
+                  'Acesso imediato após pagamento',
+                  'Suporte prioritário',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
 
-              {/* Botão da Yampi */}
+              {/* Botão Yampi */}
               <div id="yampi-checkout-btn" className="w-full" />
             </CardContent>
           </Card>
 
           {/* Segurança */}
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4 text-sm text-muted-foreground">
+          <Card className="bg-card/70 border-border/30 backdrop-blur">
+            <CardContent className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
               <Shield className="h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium text-foreground">Pagamento 100% seguro</p>
-                Seus dados são protegidos pela Yampi.
+                <p>Processado com tecnologia Yampi</p>
               </div>
             </CardContent>
           </Card>
