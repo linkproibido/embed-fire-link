@@ -10,12 +10,11 @@ import { CheckCircle, CreditCard, Shield } from 'lucide-react';
 
 const Checkout = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is authenticated
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -28,83 +27,50 @@ const Checkout = () => {
     checkUser();
   }, [navigate]);
 
-  const handlePayment = async () => {
-    if (!user) return;
+  // Cria assinatura no Supabase assim que user estiver carregado
+  useEffect(() => {
+    const createSubscription = async () => {
+      if (!user || subscriptionId) return;
 
-    setLoading(true);
-
-    try {
-      // Create subscription record in pending status
-      const { data: subscription, error } = await supabase
+      const { data, error } = await supabase
         .from('subscriptions')
         .insert({
           user_id: user.id,
+          email: user.email,
           status: 'pending',
           amount: 20.00
         })
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating subscription:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao criar assinatura. Tente novamente.",
-          variant: "destructive"
-        });
-        return;
+      if (data) {
+        setSubscriptionId(data.id);
       }
 
-      // Here you would integrate with Mercado Pago
-      // For now, we'll simulate a successful payment
-      const paymentData = {
-        subscription_id: subscription.id,
-        user_email: user.email,
-        amount: 20.00
-      };
+      if (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível criar a assinatura.",
+          variant: "destructive"
+        });
+      }
+    };
 
-      // Simulate API call to Mercado Pago
-      setTimeout(async () => {
-        // Simulate successful payment and update subscription
-        const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
+    createSubscription();
+  }, [user, subscriptionId, toast]);
 
-        const { error: updateError } = await supabase
-          .from('subscriptions')
-          .update({
-            status: 'active',
-            payment_id: 'MP_' + Date.now(), // Simulated payment ID
-            expires_at: expiresAt.toISOString()
-          })
-          .eq('id', subscription.id);
+  // Insere script da Yampi para carregar botão
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js";
+    script.className = "ymp-script";
+    script.async = true;
+    document.body.appendChild(script);
 
-        if (!updateError) {
-          toast({
-            title: "Pagamento aprovado!",
-            description: "Sua assinatura foi ativada com sucesso.",
-            variant: "default"
-          });
-          navigate('/dashboard');
-        }
-      }, 2000);
-
-      toast({
-        title: "Processando pagamento...",
-        description: "Aguarde enquanto processamos seu pagamento.",
-        variant: "default"
-      });
-
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast({
-        title: "Erro no pagamento",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (!user) {
     return (
@@ -121,14 +87,10 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-      {/* Header */}
       <header className="border-b border-border/40 backdrop-blur-sm bg-background/80">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="md" />
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/dashboard')}
-          >
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             Dashboard
           </Button>
         </div>
@@ -145,7 +107,6 @@ const Checkout = () => {
         </div>
 
         <div className="grid gap-6">
-          {/* User Info */}
           <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -160,7 +121,6 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Plan Details */}
           <Card className="border-primary/20 shadow-xl bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-center">Plano Premium</CardTitle>
@@ -197,35 +157,18 @@ const Checkout = () => {
                 </div>
               </div>
 
-              <Button 
-                onClick={handlePayment}
-                disabled={loading}
-                className="w-full py-6 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg"
-                size="lg"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processando...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    Pagar com Mercado Pago
-                  </div>
-                )}
-              </Button>
+              {/* Botão Yampi será injetado aqui */}
+              <div id="yampi-checkout-btn" className="w-full" />
             </CardContent>
           </Card>
 
-          {/* Security Notice */}
           <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Shield className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Pagamento 100% seguro</p>
-                  <p>Seus dados são protegidos pelo Mercado Pago</p>
+                  <p>Seus dados são protegidos pela Yampi</p>
                 </div>
               </div>
             </CardContent>
