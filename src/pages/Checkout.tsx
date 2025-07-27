@@ -12,7 +12,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
 import Logo from '@/components/Logo';
-import { CheckCircle, CreditCard, Shield } from 'lucide-react';
+import { CheckCircle, Shield } from 'lucide-react';
 
 const Checkout = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +20,6 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Verifica autenticação
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -34,7 +33,6 @@ const Checkout = () => {
     checkUser();
   }, [navigate]);
 
-  // Cria assinatura
   useEffect(() => {
     const createSubscription = async () => {
       if (!user || subscriptionId) return;
@@ -64,7 +62,6 @@ const Checkout = () => {
     createSubscription();
   }, [user, subscriptionId, toast]);
 
-  // Carrega botão Yampi
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://api.yampi.io/v2/hype-sistemas/public/buy-button/AYCW65ZQEL/js';
@@ -92,7 +89,6 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/90 to-primary/5">
-      {/* Header */}
       <header className="backdrop-blur bg-background/80 border-b border-border/30">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="md" />
@@ -102,7 +98,6 @@ const Checkout = () => {
         </div>
       </header>
 
-      {/* Conteúdo */}
       <main className="container mx-auto px-4 py-12 max-w-2xl">
         <section className="text-center mb-8">
           <h1 className="text-3xl font-heading font-bold mb-2">
@@ -129,17 +124,17 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Plano */}
-          <Card className="bg-card/90 border-primary/30 shadow-lg backdrop-blur">
+          {/* Plano e botão */}
+          <Card className="bg-white border border-border/30 shadow-xl">
             <CardHeader>
               <CardTitle className="text-center text-xl">Plano Premium</CardTitle>
               <CardDescription className="text-center">
                 Acesso ilimitado a todos os conteúdos
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="text-center mb-6">
-                <div className="text-4xl font-black text-primary mb-1">
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <div className="text-4xl font-black text-primary">
                   R$ 20<span className="text-lg text-muted-foreground">/mês</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -147,7 +142,7 @@ const Checkout = () => {
                 </p>
               </div>
 
-              <ul className="space-y-3 mb-6 text-sm text-left">
+              <ul className="space-y-2 text-sm text-left">
                 {[
                   'Acesso a todas as categorias',
                   'Conteúdo exclusivo e premium',
@@ -161,7 +156,7 @@ const Checkout = () => {
                 ))}
               </ul>
 
-              {/* Botão Yampi */}
+              {/* Yampi embutido */}
               <div id="yampi-checkout-btn" className="w-full" />
             </CardContent>
           </Card>
