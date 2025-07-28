@@ -47,13 +47,14 @@ export type Database = {
         }
         Relationships: []
       }
-      movies: {
+      doramas: {
         Row: {
           created_at: string
           description: string | null
           embed_url: string
           id: string
           poster_url: string
+          tags: string[] | null
           title: string
           updated_at: string
         }
@@ -63,6 +64,7 @@ export type Database = {
           embed_url: string
           id?: string
           poster_url: string
+          tags?: string[] | null
           title: string
           updated_at?: string
         }
@@ -72,6 +74,7 @@ export type Database = {
           embed_url?: string
           id?: string
           poster_url?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string
         }
@@ -106,31 +109,37 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          admin_notes: string | null
           amount: number
           created_at: string
           expires_at: string | null
           id: string
           payment_id: string | null
+          payment_proof_url: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          admin_notes?: string | null
           amount?: number
           created_at?: string
           expires_at?: string | null
           id?: string
           payment_id?: string | null
+          payment_proof_url?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          admin_notes?: string | null
           amount?: number
           created_at?: string
           expires_at?: string | null
           id?: string
           payment_id?: string | null
+          payment_proof_url?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -142,6 +151,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_subscription: {
+        Args: { subscription_id: string }
+        Returns: undefined
+      }
       has_active_subscription: {
         Args: { _user_id?: string }
         Returns: boolean
