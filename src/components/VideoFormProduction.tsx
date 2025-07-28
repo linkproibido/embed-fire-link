@@ -46,7 +46,7 @@ const VideoForm = ({ onVideoCreated }: VideoFormProps) => {
       }
 
       const { data, error } = await supabase
-        .from("movies")
+        .from("doramas")
         .insert([
           {
             title: formData.title,

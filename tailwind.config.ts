@@ -82,7 +82,7 @@ export default {
 				'card': 'var(--shadow-card)'
 			},
 			fontFamily: {
-				'heading': ['Orbitron', 'monospace'],
+				'heading': ['Nunito', 'sans-serif'],
 				'body': ['Inter', 'sans-serif']
 			},
 			borderRadius: {
