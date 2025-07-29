@@ -114,6 +114,9 @@ const DoramaAdmin = () => {
                 <Plus className="w-4 h-4 mr-2" />
                 Gerenciar Doramas
               </Button>
+              <Button variant="outline" onClick={() => navigate('/')}>
+                Ver Site
+              </Button>
               <Button variant="outline" onClick={() => supabase.auth.signOut()}>
                 Sair
               </Button>

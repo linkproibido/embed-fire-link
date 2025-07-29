@@ -34,10 +34,10 @@ const Auth = () => {
         
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(() => {
-            if (redirectTo === 'checkout') {
-              navigate('/checkout');
+            if (redirectTo === 'plano') {
+              navigate('/plano');
             } else {
-              navigate('/dashboard');
+              navigate('/');
             }
           }, 0);
         }
@@ -50,10 +50,10 @@ const Auth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        if (redirectTo === 'checkout') {
-          navigate('/checkout');
+        if (redirectTo === 'plano') {
+          navigate('/plano');
         } else {
-          navigate('/dashboard');
+          navigate('/');
         }
       }
     });
@@ -113,7 +113,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
         email,
