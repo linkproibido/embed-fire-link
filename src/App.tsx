@@ -9,6 +9,7 @@ import PlanoPagamento from "./pages/PlanoPagamento";
 import Auth from "./pages/Auth";
 import DoramaAdmin from "./pages/DoramaAdmin";
 import DoramaManagement from "./pages/DoramaManagement";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/dorama/:encodedId" element={<DoramaView />} />
           <Route path="/plano" element={<PlanoPagamento />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<DoramaAdmin />} />
           <Route path="/admin/doramas" element={<DoramaManagement />} />
           <Route path="*" element={<NotFound />} />

@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Search, Play, Heart, Star } from 'lucide-react';
+import { User, Search, Play, Heart, Star, Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Dorama {
