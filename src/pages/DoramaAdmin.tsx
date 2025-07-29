@@ -15,7 +15,7 @@ interface Subscription {
   status: string;
   amount: number;
   created_at: string;
-  profiles: { email: string } | null;
+  profiles?: { email: string } | null;
 }
 
 const DoramaAdmin = () => {
@@ -61,13 +61,13 @@ const DoramaAdmin = () => {
         .from('subscriptions')
         .select(`
           *,
-          profiles!subscriptions_user_id_fkey(email)
+          profiles!inner(email)
         `)
         .eq('status', 'pending_approval')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSubscriptions(data || []);
+      setSubscriptions((data as any) || []);
     } catch (error) {
       console.error('Error loading subscriptions:', error);
     } finally {
